@@ -80,15 +80,13 @@ p > .highlight, p > .highlight-2 {
         <section id="intro">
 <code>
 default-extensions:
-  <a href="#gadt-syntax">GADTSyntax</a>
-  <a href="#kind-signatures">KindSignatures
+  <a href="#gadt-syntax">GADTSyntax</a> <a href="#kind-signatures">KindSignatures
   StandaloneKindSignatures</a>
-  <a href="#type-variables">ExplicitForall
-  TypeApplications</a>
+  <a href="#type-variables">ExplicitForall TypeApplications</a>
   <a href="#scoped-type-variables">ScopedTypeVariables</a>
-  <a href="#rank-n-types">RankNTypes</a>
-  <a href="#constraints">ConstraintKinds</a>
+  <a href="#rank-n-types">RankNTypes</a> <a href="#constraints">ConstraintKinds</a>
   <a href="#existential-quantification">ExistentialQuantification</a>
+  <a href="#gadts">GADTs</a>
 </code>
         </section>
 
@@ -670,6 +668,90 @@ x2 = MkShowable @Bool True
               The difference is that type variables are not passed or stored at
               runtime. This is called <em>erasure</em> or <em>irrelevance</em>.
             </p>
+          </section>
+        </section>
+
+        <section id="gadts">
+          <section>
+            <h2>Equality Constraints</h2>
+<code>
+id_eq :: forall a b. <span class="highlight">a ~ b</span> =&gt; a -&gt; b
+id_eq = \x -&gt; x
+</code>
+            <p>
+              <code>a ~ b</code> represents a proof that <code>a</code> and
+              <code>b</code> are the same type.
+            </p>
+          </section>
+          <section>
+            <h2>Equality Constraints</h2>
+<code>
+f = id_eq @Bool @Bool
+g = id_eq @Bool <span class="error">@String</span>
+</code>
+            <p>
+              <code>Bool ~ String</code> is unsatisfiable.
+            </p>
+          </section>
+          <section>
+            <h2>Equality Constraints</h2>
+<code>
+type (~) :: Type -&gt; Type -&gt; Constraint
+
+instance Bool ~ Bool
+instance Char ~ Char
+instance <span class="error">Char ~ Bool</span>  <span class="comment">-- does not exist</span>
+</code>
+            <p>
+              Even though <code>(~)</code> is not an ordinary type class, the dictionary passing intuition is valid.
+            </p>
+          </section>
+          <section>
+            <h2>Equality Constraints</h2>
+            <p>The compiler has built-in knowledge about equality:</p>
+            <ul>
+              <li><code>forall a. a ~ a</code></li>
+              <li><code>forall a b. a ~ b =&gt; b ~ a</code></li>
+              <li><code>forall a b. (a ~ b, b ~ c) =&gt; (a ~ c)</code></li>
+              <li><code>forall f g a b. f a ~ g b =&gt; (f ~ g, a ~ b)</code></li>
+            </ul>
+          </section>
+          <section>
+            <h2>Equality Constraints</h2>
+            <p>A proof that <code>a</code> is either <code>Integer</code> or <code>Bool</code>:</p>
+<code>
+data IB a where
+  I :: forall a. a ~ Integer =&gt; IB a
+  B :: forall a. a ~ Bool    =&gt; IB a
+</code>
+          </section>
+          <section>
+            <h2>Local Equalities</h2>
+<code>
+inv :: forall a. IB a -&gt; a -&gt; a
+inv ib x =
+  case ib of
+    <span class="highlight">I -&gt; negate x</span>
+    <span class="highlight-2">B -&gt; not x</span>
+</code>
+          <p>In the <span class="highlight">first clause</span> we know that <code>x :: Integer</code>.</p>
+          <p>In the <span class="highlight-2">second clause</span> we know that <code>x :: Bool</code>.</p>
+          </section>
+          <section>
+            <h2>Generalized Algebraic Data&nbsp;Types</h2>
+<code>
+data IB a where
+  I :: forall a. a ~ Integer =&gt; IB a
+  B :: forall a. a ~ Bool    =&gt; IB a
+</code>
+
+            <p>Syntactic sugar:</p>
+
+<code>
+data IB a where
+  I :: IB Integer
+  B :: IB Bool
+</code>
           </section>
         </section>
 
