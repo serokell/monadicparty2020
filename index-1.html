@@ -78,16 +78,54 @@ p > .highlight, p > .highlight-2 {
       <div class="slides">
 
         <section id="intro">
-<code>
-default-extensions:
-  <a href="#gadt-syntax">GADTSyntax</a> <a href="#kind-signatures">KindSignatures
-  StandaloneKindSignatures</a>
-  <a href="#type-variables">ExplicitForall TypeApplications</a>
-  <a href="#scoped-type-variables">ScopedTypeVariables</a>
-  <a href="#rank-n-types">RankNTypes</a> <a href="#constraints">ConstraintKinds</a>
-  <a href="#existential-quantification">ExistentialQuantification</a>
-  <a href="#gadts">GADTs</a>
+    <h2>
+        Practical dependent types in Haskell via singletons
+    </h2>
+    <h3> 
+        Lecture 1: Introduction to singletons. The basic ideas.
+    </h3>
+    <h4>
+        Danya Rogozin
+    </h4>
+
+        </section>
+
+        <section id="singletons">
+            <section>
+            <ul>
+                <li> What is a dependent type? </li> 
+                <li> On what should it depend??</li>
+            </ul>
+            </section>
+            <section>
+                <ul>
+                    <li> What is a dependent type? </li> 
+                    <li> On what should it depend??</li>
+                    <li> Dependent types refer to term variables. </li>
+                    <li> Here, the type of <code>f</code> could be called "dependent" if <code>B</code> refers to <code>x</code></li>
+                </ul> 
+<code> 
+f :: A -> B 
+f x = ...
 </code>
+                </section>
+                <section>
+                    The differeces in construction between usual ADTs(how to mention function type ? prim...) and Dependent types: 
+                </section>
+                <section>
+                    <h3>Usual types</h3>
+                    There are several algebraic operation on data types:
+<code>
+data Either a b = Left a | Right b 
+  -- |Either a b| = |a| + |b|
+
+data (a,b) = (a,b) 
+  -- |(a,b)| = |a|*|b|
+
+data Exp a b = Exp (a -> b) 
+  -- |Exp a b| = |b| ^ |a|
+</code>  
+                </section>
         </section>
 
         <section id="gadt-syntax">
