@@ -1,0 +1,697 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Basics of Type-Level Programming in Haskell</title>
+
+    <link rel="stylesheet" href="reveal.js/css/reveal.css">
+    <link rel="stylesheet" href="reveal.js/css/theme/white.css">
+
+<style>
+code {
+  white-space: pre;
+  padding: 0.5rem 1rem;
+  display: inline-block;
+  background: #ddd;
+  border-radius: 4px;
+  color: #333;
+  text-align: left;
+  margin: 0.5rem 0;
+}
+.highlight {
+  border-radius: 4px;
+  color: white;
+  background-color: blueviolet;
+}
+.highlight-2 {
+  border-radius: 4px;
+  color: white;
+  background-color: darkorange;
+}
+.highlight-3 {
+  border-radius: 4px;
+  color: white;
+  background-color: green;
+}
+p > .highlight, p > .highlight-2 {
+  padding: 0 0.5rem;
+}
+.comment {
+  color: #888;
+  font-style: italic;
+}
+.unimportant {
+  color: #666;
+}
+.prompt {
+  color: #888;
+}
+.comment code {
+  font-style: normal;
+  background-color: #eee;
+  padding: 0 0.5rem;
+}
+.error {
+  border-radius: 4px;
+  background-color: red;
+  color: white;
+}
+.hs-ext:before {
+  content: "-X";
+  color: #888;
+}
+.bubble {
+  border-radius: 3rem;
+  border: 1px solid #ddd;
+  padding: 1rem;
+}
+.bubble > code {
+  display: block;
+}
+</style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+        <section id="intro">
+<code>
+default-extensions:
+  <a href="#gadt-syntax">GADTSyntax</a>
+  <a href="#kind-signatures">KindSignatures
+  StandaloneKindSignatures</a>
+  <a href="#type-variables">ExplicitForall
+  TypeApplications</a>
+  <a href="#scoped-type-variables">ScopedTypeVariables</a>
+  <a href="#rank-n-types">RankNTypes</a>
+  <a href="#constraints">ConstraintKinds</a>
+  <a href="#existential-quantification">ExistentialQuantification</a>
+</code>
+        </section>
+
+        <section id="gadt-syntax">
+          <h2>GADT Syntax</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Declaration</th>
+                <th>Extension</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+<code>
+data Maybe a =
+  Nothing | Just a
+</code>
+                </td>
+                <td>n/a</td>
+              </tr>
+              <tr>
+                <td>
+<code>
+data Maybe a where
+  Nothing :: Maybe a
+  Just :: a -&gt; Maybe a
+</code>
+                </td>
+                <td><code class="hs-ext">GADTSyntax</code></td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            A data type is defined by the types of its constructors.
+          </p>
+        </section>
+
+        <section id="type-constructors">
+          <section>
+            <h2>Type Constructors</h2>
+<code>
+data <span class="highlight">Bool</span> = False | True
+data <span class="highlight">Maybe</span> a = Nothing | Just a
+data <span class="highlight">Either</span> a b = Left a | Right b
+</code>
+          </section>
+          <section>
+            <h2>Type Constructors</h2>
+<code>
+data Type =
+    <span class="highlight">Bool</span>
+  | <span class="highlight">Maybe</span> Type
+  | <span class="highlight">Either</span> Type Type
+  | ...
+</code>
+          </section>
+          <section>
+            <h2>Type Constructors</h2>
+<code>
+data Type where
+  <span class="highlight">Bool</span> :: Type
+  <span class="highlight">Maybe</span> :: Type -&gt; Type
+  <span class="highlight">Either</span> :: Type -&gt; Type -&gt; Type
+  ...
+</code>
+          </section>
+          <section>
+            <h2>Type Constructors</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th><code>Bool</code></th>
+                  <th><code>Maybe</code></th>
+                  <th><code>Maybe Bool</code></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><div class="bubble"><code>False</code><code>True</code></div></td>
+                  <td>n/a</td>
+                  <td><div class="bubble"><code>Nothing</code><code>Just False</code><code>Just True</code></div></td>
+                </tr>
+              </tbody>
+            </table>
+            <p>Types are inhabited, type constructors are not.</p>
+          </section>
+        </section>
+
+        <section id="type-signatures">
+          <section>
+            <h2>Type Signatures</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Position</th>
+                  <th>Extension</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Inline</td>
+                  <td>n/a</td>
+                </tr>
+                <tr>
+                  <td>Standalone</td>
+                  <td>n/a</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+          <section>
+          <h2>Example</h2>
+<code>
+b = even 2020
+</code>
+          </section>
+          <section>
+            <h2>Inline Type Signatures</h2>
+<code>
+b = (even <span class="highlight">:: Int -&gt; Bool</span>)
+    (2020 <span class="highlight">:: Int</span>)
+</code>
+          </section>
+
+          <section>
+            <h2>Standalone Type Signatures</h2>
+<code>
+<span class="highlight">b :: Bool</span>
+b = (even :: Int -&gt; Bool)
+    (2020 :: Int)
+</code>
+          </section>
+
+          <section>
+            <h2>Motivation</h2>
+            <ul>
+              <li>Compiler-checked documentation</li>
+              <li>Type-driven development</li>
+              <li>Not all types can be inferred</li>
+            </ul>
+          </section>
+        </section>
+
+        <section id="kind-signatures">
+          <section>
+            <h2>Kind Signatures</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Position</th>
+                  <th>Extension</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Inline</td>
+                  <td><code class="hs-ext">KindSignatures</code></td>
+                </tr>
+                <tr>
+                  <td>Standalone</td>
+                  <td><code class="hs-ext">StandaloneKindSignatures</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        <section>
+          <h2>Example</h2>
+<code>
+m :: Maybe Char
+m = Just 'm'
+</code>
+          </section>
+          <section>
+            <h2>Inline Kind Signatures</h2>
+<code>
+m :: (Maybe <span class="highlight">:: Type -&gt; Type</span>)
+     (Char <span class="highlight">:: Type</span>)
+m = Just 'm'
+</code>
+          </section>
+
+          <section>
+            <h2>Standalone Kind Signatures</h2>
+<code>
+<span class="highlight">type Maybe :: Type -&gt; Type</span>
+data Maybe a = Nothing | Just a
+</code>
+          </section>
+          <section>
+            <h2>Motivation</h2>
+            <ul>
+              <li>Compiler-checked documentation</li>
+              <li>Kind-driven development</li>
+              <li>Not all kinds can be inferred</li>
+            </ul>
+          </section>
+        </section>
+
+        <section id="type-variables">
+          <section>
+            <h2>Type Variables</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Quantification</th>
+                  <th>Extension</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>id :: a -&gt; a</code> </td>
+                  <td>n/a</td>
+                </tr>
+                <tr>
+                  <td><code>id :: <span class="highlight">forall a.</span> a -&gt; a</code></td>
+                  <td><code class="hs-ext">ExplicitForAll</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+          <section>
+            <h2>Type Variables</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Application</th>
+                  <th>Extension</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>id True</code> </td>
+                  <td>n/a</td>
+                </tr>
+                <tr>
+                  <td><code>id <span class="highlight">@Bool</span> True</code></td>
+                  <td><code class="hs-ext">TypeApplications</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+          <section>
+            <h2>Type Variables</h2>
+            <p>Think of type variables as <em>additional inputs</em> to a function. Present at compile-time but not at run-time.</p>
+            <p>This is what GHC always does internally.</p>
+            <p>
+              With <code class="hs-ext">ExplicitForAll</code> and
+              <code class="hs-ext">TypeApplications</code> we can write it out
+              explicitly.
+            </p>
+          </section>
+          <section>
+            <h2>Type Variables</h2>
+            <p><code>id</code> has two inputs:</p>
+            <ol>
+              <li><code>a</code> of kind <code>Type</code></li>
+              <li><code>x</code> of type <code>a</code></li>
+            </ol>
+            <p>
+<code>
+id @(Bool :: Type)
+    (True :: Bool)
+</code>
+            </p>
+          </section>
+        </section>
+
+        <section id="scoped-type-variables">
+          <section>
+            <h2>Scoped Type Variables</h2>
+            <p>Without <code class="hs-ext">ScopedTypeVariables</code>:</p>
+<code>
+id :: forall a. <span class="highlight">a -&gt; a</span>  <span class="comment">-- the scope of <code>a</code></span>
+id = \x -&gt; (x :: <span class="error">a</span>)     <span class="comment">-- <code>a</code> not in scope</span>
+</code>
+          </section>
+          <section>
+            <h2>Scoped Type Variables</h2>
+            <p>With <code class="hs-ext">ScopedTypeVariables</code>:</p>
+<code>
+id :: forall a. <span class="highlight">a -&gt; a</span>
+id = \x -&gt; <span class="highlight">(x :: a)</span>  <span class="comment">-- the scope of <code>a</code></span>
+</code>
+          </section>
+          <section>
+            <h2>Type Abstraction</h2>
+            <p>In future versions of GHC (proposal <a href="https://github.com/ghc-proposals/ghc-proposals/blob/master/proposals/0155-type-lambda.rst">#155</a>):</p>
+<code>
+id :: forall a. a -&gt; a
+id = \ <span class="highlight">@a</span> x -&gt; (x :: a)
+</code>
+            <p>Remember to think of <code>forall</code>-bound type variables as additional inputs.</p>
+          </section>
+        </section>
+
+        <section id="rank-n-types">
+          <section>
+            <h2>Higher-Rank Polymorphism</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Extension</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+<code>
+f :: (Bool -&gt; String)
+  -&gt; String
+</code>
+                  </td>
+                  <td>n/a</td>
+                </tr>
+                <tr>
+                  <td>
+<code>
+f :: (<span class="highlight">forall a.</span> a -&gt; [a])
+  -&gt; String
+</code>
+                  </td>
+                  <td><code class="hs-ext">RankNTypes</code></td>
+                </tr>
+              </tbody>
+            </table>
+            <p>Higher-rank types are just like higher-order functions.</p>
+            <p>Inputs that have inputs.</p>
+          </section>
+
+          <section>
+            <h2>Higher-Order Functions</h2>
+<code>
+f :: (Bool -&gt; String) -&gt; String
+f ppr = ppr True ++ " " ++ ppr False
+</code>
+          <p><code>f</code> applies <code>ppr</code> to different input values.</p>
+          </section>
+          <section>
+            <h2>Higher-Order Functions</h2>
+<code>
+ppr1 True = "yes"
+ppr1 False = "no"
+</code>
+
+<code>
+ppr2 True = "1"
+ppr2 False = "0"
+</code>
+          <p><code>ppr1</code> and <code>ppr2</code>must handle all possible input values.</p>
+          </section>
+          <section>
+            <h2>Higher-Order Functions</h2>
+<code>
+<span class="prompt">ghci&gt;</span> f ppr1
+"yes no"
+</code>
+<code>
+<span class="prompt">ghci&gt;</span> f ppr2
+"1 0"
+</code>
+          <p><code>f</code> is a higher-order function function.</p>
+          <p>
+            It takes an input, <code>Bool -&gt; String</code>, that itself has
+            an input, <code>Bool</code>.
+          </p>
+          </section>
+          <section>
+            <h2>Higher-Rank Polymorphism</h2>
+            <p><code class="hs-ext">RankNTypes</code>: same deal.</p>
+            <p>
+              <code>f</code> takes an input, <code>forall a. a -&gt; [a]</code>,
+              that itself has two inputs. One of them is a type:
+            </p>
+<code>
+f :: (<span class="highlight">forall a.</span> a -&gt; [a]) -&gt; String
+</code>
+          </section>
+          <section>
+            <h2>Higher-Rank Polymorphism</h2>
+<code>
+f :: (forall a. a -&gt; [a]) -&gt; String
+f rep = show (rep <span class="highlight">@Bool</span> <span class="highlight-2">True</span>)
+           ++ " " ++
+        show (rep <span class="highlight">@Integer</span> <span class="highlight-2">5</span>)
+</code>
+          <p>
+            <code>f</code> applies <code>rep</code> to different
+            <span class="highlight">input types</span> and different
+            <span class="highlight-2">input values</span>.
+          </p>
+          </section>
+          <section>
+            <h2>Higher-Rank Polymorphism</h2>
+<code>
+rep0 :: forall a. a -&gt; [a]
+rep0 = const []
+</code>
+<code>
+rep3 :: forall a. a -&gt; [a]
+rep3 = replicate 3
+</code>
+          <p><code>rep0</code> and <code>rep3</code>must handle all possible input types and input values.</p>
+          </section>
+          <section>
+            <h2>Higher-Rank Polymorphism</h2>
+<code>
+rep0, rep3 :: <span class="highlight">forall (a :: Type).</span> <span class="highlight-2">a -&gt;</span> [a]
+</code>
+            <p>
+              Indeed, <code>rep0</code> and <code>rep3</code> can take <span class="highlight">any&nbsp;type</span>
+              and <span class="highlight-2">any&nbsp;value</span> as inputs:
+            </p>
+<code>
+<span class="prompt">ghci&gt;</span> rep3 <span class="highlight">@(Maybe Double)</span> <span class="highlight-2">(Just 5)</span>
+[Just 5.0,Just 5.0,Just 5.0]
+</code>
+          </section>
+          <section>
+            <h2>Higher-Rank Polymorphism</h2>
+<code>
+<span class="prompt">ghci&gt;</span> f rep0
+"[] []"
+</code>
+<code>
+<span class="prompt">ghci&gt;</span> f rep3
+"[True,True,True] [5,5,5]"
+</code>
+          <p> <code>f</code> takes a polymorphic function of type <code>forall a. a -&gt; [a]</code> as input. </p>
+          <p> <code>rep0</code> and <code>rep3</code> have that type. Nothing fancy.</p>
+          </section>
+        </section>
+        <section id="constraints">
+          <section>
+            <h2>Constraints</h2>
+            <p>
+              Types have the kind <code>Type</code>. Constraints have the kind
+              <code>Constraint</code>. Otherwise, they are quite similar.
+            </p>
+<code>
+data Constraint where
+  <span class="highlight">Num</span> :: Type -&gt; Constraint
+  <span class="highlight">Ord</span> :: Type -&gt; Constraint
+  <span class="highlight">Functor</span> :: (Type -&gt; Type) -&gt; Constraint
+  ...
+</code>
+          </section>
+          <section>
+            <h2>Constraints</h2>
+            <p>Classes are basically record types.</p>
+<code>
+<strong>class</strong> Functor f where
+  fmap :: forall a b. (a -&gt; b) -&gt; f a -&gt; f b
+</code>
+
+<code>
+<strong>data</strong> Functor f = <span class="unimportant">MkFunctor {</span>
+  fmap :: forall a b. (a -&gt; b) -&gt; f a -&gt; f b
+<span class="unimportant">}</span>
+</code>
+          </section>
+          <section>
+            <h2>Constraints</h2>
+            <p>Except they are constraints, not types.</p>
+<code>
+type Functor :: (Type -&gt; Type) -&gt; <span class="highlight">Constraint</span>
+<strong>class</strong> Functor f where
+  fmap  :: forall a b. (a -&gt; b) -&gt; f a -&gt; f b
+</code>
+
+<code>
+type Functor' :: (Type -&gt; Type) -&gt; <span class="highlight">Type</span>
+<strong>data</strong> Functor' f = <span class="unimportant">MkFunctor {</span>
+  fmap' :: forall a b. (a -&gt; b) -&gt; f a -&gt; f b
+<span class="unimportant">}</span>
+</code>
+          </section>
+          <section>
+            <h2>Constraints</h2>
+            <p>And class instances are values.</p>
+<code>
+instance Functor Maybe where
+  fmap  = \f -&gt; maybe Nothing (Just . f)
+</code>
+
+<code>
+functorMaybe :: Functor' Maybe
+functorMaybe = <span class="unimportant">MkFunctor {</span>
+  fmap' = \f -&gt; maybe Nothing (Just . f)
+<span class="unimportant">}</span>
+</code>
+          </section>
+          <section>
+            <h2>Constraints</h2>
+            <p>Except they are unique.</p>
+<code>
+instance Functor Maybe where
+  fmap = \f -&gt; maybe Nothing (Just . f)
+
+instance <span class="error">Functor Maybe</span> where
+  fmap = ...    <span class="comment">-- duplicate instance!</span>
+</code>
+
+          </section>
+          <section>
+            <h2>Constraints</h2>
+            <p><code>=&gt;</code> is the <code>-&gt;</code> of constraints.</p>
+<code>
+k :: Functor  f =&gt; f Integer -&gt; f Bool
+k   x = fmap   even x
+</code>
+
+<code>
+k :: Functor' f <span class="highlight">-&gt;</span> f Integer -&gt; f Bool
+k <span class="highlight">d</span> x = fmap' <span class="highlight">d</span> even x
+</code>
+          <p>Except the argument is passed behind the scenes.</p>
+
+          </section>
+          <section>
+            <h2>Constraints</h2>
+            <p>This treatment of type classes is called <em>dictionary passing</em>.</p>
+            <p>
+              Libraries like <code>reflection</code> and
+              <code>singletons</code> make use of this implementation detail.
+            </p>
+          </section>
+          <section>
+            <h2>Constraints</h2>
+            <p>
+              The use of <code>Constraint</code> in kind signatures requires <code class="hs-ext">ConstraintKinds</code>.
+            </p>
+          </section>
+        </section>
+        <section id="existential-quantification">
+          <section>
+            <h2>Existential Quantification</h2>
+            <p><code>MkShowable</code> has three fields:</p>
+<code>
+data Showable where
+  MkShowable ::
+    <span class="highlight">forall a.</span> <span class="highlight-2">Show a =&gt;</span> <span class="highlight-3">a -&gt;</span>
+    Showable
+</code>
+            <p>One of them is a type variable. This is allowed by <code class="hs-ext">ExistentialQuantification</code>.</p>
+          </section>
+          <section>
+            <h2>Existential Quantification</h2>
+<code>
+<span class="highlight">x1, x2 :: Showable</span>
+x1 = MkShowable @Integer 5
+x2 = MkShowable @Bool True
+</code>
+            <p>Existential type variables do not show up in the signature, like other fields.</p>
+          </section>
+          <section>
+            <h2>Existential Quantification</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Quantification</th>
+                  <th>Correspondence</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Universal</td>
+                  <td>Function argument</td>
+                </tr>
+                <tr>
+                  <td>Existential</td>
+                  <td>Constructor field</td>
+                </tr>
+              </tbody>
+            </table>
+            <p>
+              The difference is that type variables are not passed or stored at
+              runtime. This is called <em>erasure</em> or <em>irrelevance</em>.
+            </p>
+          </section>
+        </section>
+
+      </div>
+    </div>
+
+    <script src="reveal.js/js/reveal.js"></script>
+
+    <script>
+      Reveal.initialize({
+        hash: true,
+        controls: false
+      });
+
+      addEventListener('load', function () {
+          var pre = document.getElementsByTagName("code");
+          for (var i = 0, len = pre.length; i < len; i++) {
+              var text = pre[i].firstChild.nodeValue;
+              pre[i].firstChild.nodeValue = text.replace(/^\n+|\n+$/g, "");
+          }
+      });
+    </script>
+  </body>
+
+</html>
