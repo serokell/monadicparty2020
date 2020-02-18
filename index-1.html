@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <title>Basics of Type-Level Programming in Haskell</title>
+    <title>Practical Dependent Types in Haskell via Singletons</title>
 
     <link rel="stylesheet" href="reveal.js/css/reveal.css">
     <link rel="stylesheet" href="reveal.js/css/theme/white.css">
@@ -110,7 +110,7 @@ f x = ...
 </code>
                 </section>
                 <section>
-                    The differeces in construction between usual ADTs(how to mention function type ? prim...) and Dependent types: 
+                    The differeces in construction between usual ADTs and dependent types: 
                 </section>
                 <section>
                     <h3>Usual types</h3>
@@ -126,6 +126,48 @@ data Exp a b = Exp (a -> b)
   -- |Exp a b| = |b| ^ |a|
 </code>  
                 </section>
+    <section>
+Let <code>(x, y) :: (a, b)</code>. <code>b</code> doesn't refer to <code>x</code> </li>
+    </section>
+
+    <section>
+      <h3> Dependent types </h3>
+
+<h4>The canonical dependent types are:</h4>
+      <ul>
+        <li> Pi-type </li>
+        <li> Sigma-type </li>
+        <li> Identity type </li>
+      </ul>
+    </section>
+
+    <section>
+      <h4>Pi-type</h4>
+      <ul>
+        <li> Pi-type is a sort of a universal quantifier </li>
+        <li> Let <code>a</code> be a type and <code>p :: a -> Type</code> a map from <code>a</code> to the universe of types</li>
+        <li> A Pi-type is a type that has the form <code>(x :: a) -> p x </code> </li>
+        <li> An output of a function depends on a passed argument </li>
+        <li> In dependently typed languages, a Pi-type is inhabited via lambda-abstraction </li>
+      </ul>
+    </section>
+    <section>
+      <h4>Sigma-type</h4>
+      <ul>
+        <li> Sigma-type is a counterpart of an existential quantifier </li>
+        <li> One has some type <code>a</code> and <code>p :: a -> Type</code> as above </li>
+        <li> A Sigma-type has the form <code> Σ a p </code></li>
+        <li> <code>p :: Σ a p</code> is a pair <code>(x,y)</code>, where <code>x :: a</code> and <code>y :: p x</code></li>
+      </ul>
+    </section>
+    <section>
+      <h4>Identity type </h4>
+      <ul>
+        <li> An identity type represents equality between terms </li>
+        <li> Let <code>x, y :: a</code>, then <code>x ≡ y</code> is a type </li>
+        <li> The data constructor of an identity type is a term <code>Refl :: x ≡ x</code> </li>
+      </ul>
+    </section>
         </section>
 
         <section id="gadt-syntax">
